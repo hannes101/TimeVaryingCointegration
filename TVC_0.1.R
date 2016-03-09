@@ -53,7 +53,7 @@ na.exclude(as.data.table(diffmatrix(as.matrix(y), max.diff = 1, max.lag = 1)))
 
 
 # In gauss a preceding . means that the following calculations are meant to be carried out element-wise
-#Function to calculate the time-varying cointegration
+# Function to calculate the time-varying cointegration
 tvcoint <- function(y,p,m){
         y <- as.matrix(y)
         ystar_1 <- ycheb(y,varord = p,chebdim = m);		
@@ -111,7 +111,7 @@ ycheb <- function(mydata,varord,chebdim){
 mmax <- round(n/10)	# maximum dimension of Chebishev Polynomials
 p <- 1;			# VAR order
 
-#Setting up the matrices to hold the values
+# Setting up the matrices to hold the values
 
 lrtvc <- matrix(nrow = mmax, ncol = k);	     # TVC Stat (row) m=1,...,mmax and (col) r=1,..,k
 lrtvcpv <- matrix(nrow = mmax, ncol = k);	     # P-values using the Asymp Distr (chisquare(mrk))
@@ -129,7 +129,7 @@ return.tvcoint.0 <- tvcoint(y,p,0)
 # Log-likelihood of baseline cointegration
 ll0=log(1 - return.tvcoint.0$eigenvalues, base = exp(1));
 
-#Main Function call, using all defined functions
+# Main Function call, using all defined functions
 for(m in 1:mmax){
         result.tvcoint.m <- tvcoint(y,p,m); #/* OUT: Lambda; Eigenvectors q1...qr...q(m+1)k; det(S00) */
         evect <- result.tvcoint.m$eigenvector
