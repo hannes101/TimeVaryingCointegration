@@ -101,9 +101,8 @@ ycheb <- function(mydata,varord,chebdim){
                 n <- length(yst[, 1]);
                 ind <- seq(from = varord+2, by = 1, length.out = n);
                 i = 1;
-                while(i <= chebdim){
+                for(i in 1:chebdim){
                         yst[, (i*k+1):((i+1)*k)] <- sqrt(2)*cos(i*pi*(ind-0.5)/n)*yst[,1:k]
-                        i = i+1
                 }
                 return(yst);
         }
@@ -125,46 +124,42 @@ hann <- matrix(nrow = mmax, ncol = k);	     # Hannan-Quinn msc
 
 
 # Baseline standard cointegration analysis without chebyshev polynomials
-return.tvcoint.standard <- tvcoint(y,p,0)
+return.tvcoint.0 <- tvcoint(y,p,0)
 
 # Log-likelihood of baseline cointegration
-ll0=log(1- return.tvcoint.standard$eigenvalues, base = exp(1));
+ll0=log(1 - return.tvcoint.0$eigenvalues, base = exp(1));
 
 #Main Function call, using all defined functions
-m=1;
-while(m<=mmax){
-        #/* OUT: Lambda; Eigenvectors q1...qr...q(m+1)k; det(S00) */
-        result.tvcoint.m <- tvcoint(y,p,m);
+for(m in 1:mmax){
+        result.tvcoint.m <- tvcoint(y,p,m); #/* OUT: Lambda; Eigenvectors q1...qr...q(m+1)k; det(S00) */
         evect <- result.tvcoint.m$eigenvector
         eval <- result.tvcoint.m$eigenvalues
         llm <- log(1-eval, base = exp(1));	
-        #   /* k=3 and r=1 */		
+        #  /* k=3 and r=1 */		
         ind <- seq(from = p+2, by = 1, length.out = n-p-1); 
         beta1sum <- matrix(nrow = m, ncol = length(ind));	
         beta2sum <- matrix(nrow = m, ncol = length(ind));	
         beta3sum <- matrix(nrow = m, ncol = length(ind));	
         
-        mm=1;
-        while(mm <= m){
+        for(mm in 1:m){
                 beta1sum[mm,] <- evect[k*mm+1,1]*sqrt(2)*cos(mm*pi*(t(ind)-0.5)/(n-p-1));	
                 beta2sum[mm,] <- evect[k*mm+2,1]*sqrt(2)*cos(mm*pi*(t(ind)-0.5)/(n-p-1));	
                 beta3sum[mm,] <- evect[k*mm+3,1]*sqrt(2)*cos(mm*pi*(t(ind)-0.5)/(n-p-1));	
-                mm=mm+1;
         }
-        betat[,k*(m-1)+1:k*m] <- t(evect[1:k,1])+cbind(colSums(beta1sum),colSums(beta2sum),colSums(beta3sum));		
         
-        r=1;
-        while(r<=k){
+        betat[,k*(m-1)+1:k*m] <- t(evect[1:k,1]) + cbind(colSums(beta1sum),colSums(beta2sum),colSums(beta3sum));		
+        
+        for(r in 1:k){
                 lrtvc[m,r] <- (n-p-1)*colSums(ll0[1:r, ]) - (n-p-1)*colSums(llm[1:r,.]);	
                 lrtvcpv[m,r] <- cdfchic(lrtvc[m,r],m*r*k);		
-                lnlikm[m,r] <- (ln(r)-k-k*ln(2*pi))*(n-p-1)/2 - colSums(llm[1:r,.])*(n-p-1)/2 - (ln(detm))*(n-p-1)/2;				npar = (m+1)*k*r+r*k+k^2+(k+(p-1)*k^2);		
+                lnlikm[m,r] <- (log(r, base = exp(1))-k-k*log((2*pi), base = exp(1)))*(n-p-1)/2 - colSums(llm[1:r,.])*(n-p-1)/2 - (log(detm, base = exp(1)))*(n-p-1)/2;				        npar <- (m+1)*k*r+r*k+k^2+(k+(p-1)*k^2);		
                 aic[m,r] <-  -2*lnlikm[m,r]/(n-p-1)+npar*2/(n-p-1);					
-                bic[m,r] <-  -2*lnlikm[m,r]/(n-p-1)+npar*(ln(n-p-1))/(n-p-1);			
-                hann[m,r] <-  -2*lnlikm[m,r]/(n-p-1)+npar*(ln(ln(n-p-1)))*2/(n-p-1);	
-                r <- r+1;
+                bic[m,r] <-  -2*lnlikm[m,r]/(n-p-1)+npar*(log(n-p-1, base= exp(1)))/(n-p-1);			
+                hann[m,r] <-  -2*lnlikm[m,r]/(n-p-1)+npar*(log(log((n-p-1), base = exp(1)), base = exp(1)))*2/(n-p-1);	
         }
-        m <- m+1;
+        
 }
+
 
 
 
