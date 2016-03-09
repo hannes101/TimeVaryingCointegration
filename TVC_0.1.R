@@ -55,8 +55,12 @@ na.exclude(as.data.table(diffmatrix(as.matrix(y), max.diff = 1, max.lag = 1)))
 # In gauss a preceding . means that the following calculations are meant to be carried out element-wise
 # Function to calculate the time-varying cointegration
 tvcoint <- function(y,p,m){
+        # local ystar_1,ysub,y_1,dy,dylags,T,betau,resu,betav,resv,S00,S01,S10,S11,S00inv,S11inv,A,eval,evec,evs;
         y <- as.matrix(y)
         ystar_1 <- ycheb(y,varord = p,chebdim = m);		
+        # dy is the same as the Z0 matrix in ca.jo
+        # ylags would be the same as ZK
+        # dylags is equivalent to Z1
         dy <- na.exclude(as.data.table(diffmatrix(as.matrix(y), max.diff = 1, max.lag = 1)))
         dylags <-  na.exclude(lag.data.table(dy, max.lag = p))
         dy <- dy[-(1:lags)]
@@ -79,11 +83,11 @@ tvcoint <- function(y,p,m){
         S00inv <- solve(S00);       
         S11inv <- solve(S11);       
         A <- S11inv %*% S10 %*% S00inv %*% S01; 
-        valeigen <- eigen(A);     
-        evs <- valeigen$values 
-        evec <- valeigen$vector	
+        valeigen <- eigen(A);
+        evs <- cbind(valeigen$values,valeigen$vectors)[order(valeigen$values, decreasing = TRUE), ]
+        evec = t(evs[,2:ncol(evs)])
         detS00 <- det(S00)
-        output <- list("eigenvalues" = evs, "eigenvector" =evec, "determinant" = detS00)
+        output <- list("eigenvalues" = evs[, 1], "eigenvector" = evec, "determinant" = detS00)
         return(output)
 }
 
@@ -147,10 +151,10 @@ for(m in 1:mmax){
                 beta3sum[mm,] <- evect[k*mm+3,1]*sqrt(2)*cos(mm*pi*(t(ind)-0.5)/(n-p-1));	
         }
         
-        betat[,k*(m-1)+1:k*m] <- t(evect[1:k,1]) + cbind(colSums(beta1sum),colSums(beta2sum),colSums(beta3sum));		
+        betat[,(k*(m-1)+1):(k*m)] <- cbind(evect[(1:k), 1] + cbind(colSums(beta1sum), colSums(beta2sum), colSums(beta3sum)))		
         
         for(r in 1:k){
-                lrtvc[m,r] <- (n-p-1)*colSums(ll0[1:r, ]) - (n-p-1)*colSums(llm[1:r,.]);	
+                lrtvc[m,r] <- (n-p-1)*sum(ll0[1:r]) - (n-p-1)*sum(llm[1:r]);	
                 lrtvcpv[m,r] <- cdfchic(lrtvc[m,r],m*r*k);		
                 lnlikm[m,r] <- (log(r, base = exp(1))-k-k*log((2*pi), base = exp(1)))*(n-p-1)/2 - colSums(llm[1:r,.])*(n-p-1)/2 - (log(detm, base = exp(1)))*(n-p-1)/2;				        npar <- (m+1)*k*r+r*k+k^2+(k+(p-1)*k^2);		
                 aic[m,r] <-  -2*lnlikm[m,r]/(n-p-1)+npar*2/(n-p-1);					
