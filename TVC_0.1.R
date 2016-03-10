@@ -155,8 +155,9 @@ for(m in 1:mmax){
         
         for(r in 1:k){
                 lrtvc[m,r] <- (n-p-1)*sum(ll0[1:r]) - (n-p-1)*sum(llm[1:r]);	
-                lrtvcpv[m,r] <- cdfchic(lrtvc[m,r],m*r*k);		
-                lnlikm[m,r] <- (log(r, base = exp(1))-k-k*log((2*pi), base = exp(1)))*(n-p-1)/2 - colSums(llm[1:r,.])*(n-p-1)/2 - (log(detm, base = exp(1)))*(n-p-1)/2;				        npar <- (m+1)*k*r+r*k+k^2+(k+(p-1)*k^2);		
+                lrtvcpv[m,r] <- 1-dchisq(lrtvc[m,r],m*r*k)
+                lnlikm[m,r] <- (log(r, base = exp(1))-k-k*log((2*pi), base = exp(1)))*(n-p-1)/2 - sum(llm[1:r])*(n-p-1)/2 - (log(detm, base = exp(1)))*(n-p-1)/2;				        
+                npar <- (m+1)*k*r+r*k+k^2+(k+(p-1)*k^2);		
                 aic[m,r] <-  -2*lnlikm[m,r]/(n-p-1)+npar*2/(n-p-1);					
                 bic[m,r] <-  -2*lnlikm[m,r]/(n-p-1)+npar*(log(n-p-1, base= exp(1)))/(n-p-1);			
                 hann[m,r] <-  -2*lnlikm[m,r]/(n-p-1)+npar*(log(log((n-p-1), base = exp(1)), base = exp(1)))*2/(n-p-1);	
