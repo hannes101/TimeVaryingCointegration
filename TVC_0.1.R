@@ -12,10 +12,11 @@ y <- cbind(y1, y2, y3)
 
 y <- as.data.table(y)
 
-n <- y[,.N]
+n <- nrow(y)
 k <- ncol(y)
 
 # Function to create lagged data.tables
+# functions validated against proc varlags 
 lag.data.table <- function(data, max.lag = 1){
         data[, shift(data, max.lag, give.names = TRUE)]
 }
@@ -61,6 +62,7 @@ tvcoint <- function(y,p,m){
         # dy is the same as the Z0 matrix in ca.jo
         # ylags would be the same as ZK
         # dylags is equivalent to Z1
+        # checked the dimensions and content of all preliminary matrices against original gauss code
         dy <- na.exclude(as.data.table(diffmatrix(as.matrix(y), max.diff = 1, max.lag = 1)))
         dylags <-  na.exclude(lag.data.table(dy, max.lag = p))
         dy <- dy[-(1:lags)]
@@ -76,6 +78,7 @@ tvcoint <- function(y,p,m){
         # betav <- (dylags'dylags)^-1 dylags ystar_1
         betav <-  as.matrix(solve(crossprod(as.matrix(dylags))) %*% crossprod(as.matrix(dylags), as.matrix(ystar_1)))
         resv <- ystar_1-(as.matrix(dylags) %*% as.matrix(betav));
+        
         S00 <- (crossprod(resu))/ myT;        
         S01 <- (crossprod(resu,resv))/myT;        
         S10 <- t(S01);                
@@ -93,6 +96,7 @@ tvcoint <- function(y,p,m){
 
 
 # function to calculate the chebyshev polynomials            
+# function validated against the original gauss code
 ycheb <- function(mydata,varord,chebdim){
         #  local i,yst,k,n,nn,ind;
         k <- ncol(mydata);
@@ -155,7 +159,7 @@ for(m in 1:mmax){
         
         for(r in 1:k){
                 lrtvc[m,r] <- (n-p-1)*sum(ll0[1:r]) - (n-p-1)*sum(llm[1:r]);	
-                lrtvcpv[m,r] <- 1-dchisq(lrtvc[m,r],m*r*k)
+                lrtvcpv[m,r] <- 1-pchisq(lrtvc[m,r],m*r*k)
                 lnlikm[m,r] <- (log(r, base = exp(1))-k-k*log((2*pi), base = exp(1)))*(n-p-1)/2 - sum(llm[1:r])*(n-p-1)/2 - (log(detm, base = exp(1)))*(n-p-1)/2;				        
                 npar <- (m+1)*k*r+r*k+k^2+(k+(p-1)*k^2);		
                 aic[m,r] <-  -2*lnlikm[m,r]/(n-p-1)+npar*2/(n-p-1);					
