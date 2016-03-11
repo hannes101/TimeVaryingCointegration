@@ -86,7 +86,7 @@ tvcoint <- function(y,p,m){
         S00inv <- solve(S00);       
         S11inv <- solve(S11);       
         A <- S11inv %*% S10 %*% S00inv %*% S01; 
-        valeigen <- eigen(A);
+        valeigen <- eigen(A, symmetric = TRUE);
         evs <- cbind(valeigen$values,valeigen$vectors)[order(valeigen$values, decreasing = TRUE), ]
         evec = t(evs[,2:ncol(evs)])
         detS00 <- det(S00)
@@ -173,4 +173,4 @@ for(m in 1:mmax){
 
 
 
-save.image("myTVPData.RData", compress = "xz")
+save.image("myTVCData.RData", compress = "xz")
