@@ -90,7 +90,7 @@ tvcoint <- function(y,p,m){
         evs <- cbind(valeigen$values,valeigen$vectors)[order(valeigen$values, decreasing = TRUE), ]
         evec = t(evs[,2:ncol(evs)])
         detS00 <- det(S00)
-        output <- list("eigenvalues" = evs[, 1], "eigenvector" = evec, "determinant" = detS00)
+        output <- list("eigenvalues" = evs[, 1], "eigenvectors" = evec, "determinant" = detS00)
         return(output)
 }
 
@@ -140,7 +140,7 @@ ll0=log(1 - return.tvcoint.0$eigenvalues, base = exp(1));
 # Main Function call, using all defined functions
 for(m in 1:mmax){
         result.tvcoint.m <- tvcoint(y,p,m); #/* OUT: Lambda; Eigenvectors q1...qr...q(m+1)k; det(S00) */
-        evect <- result.tvcoint.m$eigenvector
+        evect <- result.tvcoint.m$eigenvectors
         eval <- result.tvcoint.m$eigenvalues
         llm <- log(1-eval, base = exp(1));	
         #  /* k=3 and r=1 */		
@@ -169,8 +169,14 @@ for(m in 1:mmax){
         
 }
 
+mminhan <- matrix(nrow = k, ncol = 1);
+for(r in 1:k){
+        mminhan[r,1] <- which.min(hann[,r])
+}
 
 
 
 
-save.image("myTVPData.RData", compress = "xz")
+
+
+save.image("myTVCData.RData", compress = "xz")
