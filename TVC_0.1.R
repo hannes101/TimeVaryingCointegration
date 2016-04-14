@@ -13,6 +13,7 @@ y <- cbind(y1, y2, y3)
 y <- as.data.table(y)
 
 n <- nrow(y)
+# Number of endogenous variables in the analysis
 k <- ncol(y)
 # Helping functions
 # Function to calculate the eigenvalues and eigenvectors with the QR algorithm
@@ -23,7 +24,7 @@ my.qr.eigen <- function(x){
         x <- as.matrix(x)
         pQ <- diag(1, dim(x)[1]);
         # iterate 
-        while(sum(x[lower.tri(x, diag = FALSE)]^2) > 0.0000001){
+        while(sum(abs(x[lower.tri(x, diag = FALSE)])) > 0.0000001){
                 d <- qr(x);
                 Q <- qr.Q(d);
                 pQ <- pQ %*% Q;
@@ -163,11 +164,10 @@ ll0=log(1 - return.tvcoint.0$eigenvalues, base = exp(1));
 
 # Main Function call, using all defined functions
 for(m in 1:mmax){
-        result.tvcoint.m <- tvcoint(y,p,m); #/* OUT: Lambda; Eigenvectors q1...qr...q(m+1)k; det(S00) */
+        result.tvcoint.m <- tvcoint(y,p,m); # OUT: Lambda; Eigenvectors q1...qr...q(m+1)k; det(S00)
         evect <- result.tvcoint.m$eigenvectors
         eval <- result.tvcoint.m$eigenvalues
         llm <- log(1-eval, base = exp(1));	
-        #  /* k=3 and r=1 */		
         ind <- seq(from = p+2, by = 1, length.out = n-p-1); 
         beta1sum <- matrix(nrow = m, ncol = length(ind));	
         beta2sum <- matrix(nrow = m, ncol = length(ind));	
@@ -198,7 +198,7 @@ for(r in 1:k){
         mminhan[r,1] <- which.min(hann[,r])
 }
 
-
+m <- max(mminhan)
 
 
 
