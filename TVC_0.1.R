@@ -14,6 +14,29 @@ y <- as.data.table(y)
 
 n <- nrow(y)
 k <- ncol(y)
+# Helping functions
+# Function to calculate the eigenvalues and eigenvectors with the QR algorithm
+my.qr.eigen <- function(x){
+        if(is.matrix(x) == FALSE){
+                stop("\nPlease provide a quadratic matrix.\n")
+        }
+        x <- as.matrix(x)
+        pQ <- diag(1, dim(x)[1]);
+        # iterate 
+        while(sum(x[lower.tri(x, diag = FALSE)]^2) > 0.0000001){
+                d <- qr(x);
+                Q <- qr.Q(d);
+                pQ <- pQ %*% Q;
+                x <- qr.R(d) %*% Q; 
+                
+        }
+        # Eigenvalues
+        eig.values <- round(diag(x),5)
+        # Eigenvectors
+        eig.vec <- round(pQ,5)
+        return(list(values = eig.values, vectors = eig.vec))
+        
+}
 
 # Function to create lagged data.tables
 # functions validated against proc varlags 
@@ -86,7 +109,8 @@ tvcoint <- function(y,p,m){
         S00inv <- solve(S00);       
         S11inv <- solve(S11);       
         A <- S11inv %*% S10 %*% S00inv %*% S01; 
-        valeigen <- eigen(A);
+        # calculation of eigenvalues and -vectors with QR algorithm
+        valeigen <- my.qr.eigen(A);
         evs <- cbind(valeigen$values,valeigen$vectors)[order(valeigen$values, decreasing = TRUE), ]
         evec = t(evs[,2:ncol(evs)])
         detS00 <- det(S00)
